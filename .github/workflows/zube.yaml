@@ -1,0 +1,13 @@
+name: zube-sync
+on:
+  pull_request:
+    types: []
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: script
+      run: ./github/workflows/scripts/pr.sh
+      
