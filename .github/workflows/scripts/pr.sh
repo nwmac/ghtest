@@ -6,5 +6,4 @@ env
 echo "here"
 echo $GITHUB_EVENT_PATH
 
-ls $GITHUB_EVENT_PATH
-cat $GITHUB_EVENT_PATH/workflow/event.json
+cat $GITHUB_EVENT_PATH
