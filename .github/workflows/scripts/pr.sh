@@ -3,7 +3,8 @@
 echo "Checking"
 env
 
-echo $github_event_path
+echo "here"
+echo $GITHUB_EVENT_PATH
 
-ls $github_event_path
-cat github_event_path/workflow/event.json
+ls $GITHUB_EVENT_PATH
+cat $GITHUB_EVENT_PATH/workflow/event.json
