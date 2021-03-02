@@ -1,6 +1,6 @@
 name: zube-sync
 on:
-  issue:
+  issues:
     types: [ closed ]
 
 jobs:
