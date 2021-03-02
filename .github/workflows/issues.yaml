@@ -1,0 +1,12 @@
+name: zube-sync
+on:
+  issue:
+    types: [ closed ]
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: script
+      run: ./github/workflows/scripts/pr.sh
