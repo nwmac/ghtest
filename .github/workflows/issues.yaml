@@ -9,4 +9,4 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: script
-      run: ./github/workflows/scripts/pr.sh
+      run: .github/workflows/scripts/pr.sh
