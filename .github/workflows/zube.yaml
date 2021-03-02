@@ -1,7 +1,7 @@
 name: zube-sync
 on:
   pull_request:
-    types: [ opened, reopened, edited, ready_for_review ]
+    types: [ opened, reopened, edited, ready_for_review, synchronize ]
 
 jobs:
   sync:
