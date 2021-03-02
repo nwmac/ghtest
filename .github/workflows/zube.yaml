@@ -1,7 +1,7 @@
 name: zube-sync
 on:
   pull_request:
-    types: [ opened, reopened, edited, ready_for_review ]
+    types: [ opened, reopened, edited, ready_for_review, synchronize ]
 
 jobs:
   sync:
@@ -9,5 +9,5 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: script
-      run: ./github/workflows/scripts/pr.sh
+      run: .github/workflows/scripts/pr.sh
 
