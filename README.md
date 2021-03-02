@@ -2,4 +2,4 @@
 
 Testing auto-close workflows
 
-test 1
+test 2
