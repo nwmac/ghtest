@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
 TOKEN=$1
 
 echo "Checking"
@@ -13,5 +15,5 @@ cat $GITHUB_EVENT_PATH
 npm --version
 node --version
 
-node ./pr.js "${TOKEN}"
+node ${DIR}/pr.js "${TOKEN}"
 
