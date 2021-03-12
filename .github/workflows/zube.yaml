@@ -1,4 +1,4 @@
-name: zube-sync
+name: zube-integration
 on:
   pull_request:
     types: [ opened, reopened, edited, ready_for_review, synchronize ]
@@ -13,5 +13,5 @@ jobs:
       with:
         node-version: '14.x'
     - name: script
-      run: .github/workflows/scripts/pr.sh "${{ secrets.GITHUB_TOKEN }}"
+      run: node .github/workflows/scripts/pr.js "${{ secrets.GITHUB_TOKEN }}"
 
