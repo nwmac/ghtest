@@ -33,7 +33,7 @@ function removeZubeLabels(labels) {
 
 async function resetZubeLabels(issue, label) {
     // Remove all zube labels
-    const cleanLabels = removeZubeLabels(iss.labels);
+    const cleanLabels = removeZubeLabels(issue.labels);
     console.log(`    Current Labels: ${cleanLabels}`);
     // Add the 'to test' label
     cleanLabels.push(label);
