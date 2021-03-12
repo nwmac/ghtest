@@ -31,6 +31,19 @@ function removeZubeLabels(labels) {
     return labels.filter(l => l.name.indexOf('[zube]') === -1);
 }
 
+async function resetZubeLabels(issue, label) {
+    // Remove all zube labels
+    const cleanLabels = removeZubeLabels(iss.labels);
+    console.log(`    Current Labels: ${cleanLabels}`);
+    // Add the 'to test' label
+    cleanLabels.push(label);
+    console.log(`    New Labels    : ${cleanLabels}`);
+
+    // Update the labels
+    const labelsAPI = `${issue.repository.url}/issues/${issue.number}/labels`;
+    request.put(labelsAPI, {labels: cleanLabels});
+}
+
 async function processClosedAction() {
     console.log('======');
     console.log('Processing Closed PR #' + event.pull_request.number + ' : ' + event.pull_request.title);
@@ -86,16 +99,7 @@ async function processClosedAction() {
             console.log('  This issue HAS the requested Review label');
             console.log('  Updating labels to move issue to Test');
 
-            // Remove all zube labels
-            const cleanLabels = removeZubeLabels(iss.labels);
-            console.log(`    Current Labels: ${cleanLabels}`);
-            // Add the 'to test' label
-            cleanLabels.push(IN_TEST_LABEL);
-            console.log(`    New Labels    : ${cleanLabels}`);
-
-            // Update the labels
-            const labelsAPI = detail + '/labels';
-            request.put(labelsAPI, {labels: cleanLabels});
+            resetZubeLabels(iss, IN_TEST_LABEL);
 
             // Re-open the issue if it is closed
             if (iss.state === 'closed') {
@@ -112,19 +116,19 @@ async function processClosedAction() {
 }
 
 async function processOpenAction() {
-    const body = event.pull_request.body;
+    const pr = event.pull_request;
 
     // Check that an assignee has been set
-    if (body.assignees.length === 0) {
+    if (pr.assignees.length === 0) {
         console.log('======');
-        console.log('Processing Opened PR #' + event.pull_request.number + ' : ' + event.pull_request.title);
+        console.log('Processing Opened PR #' + pr.number + ' : ' + pr.title);
         console.log('======');
 
-        console.log(`  Adding assignee to the PR: ${body.user.login}`);
+        console.log(`  Adding assignee to the PR: ${pr.user.login}`);
 
         // Update the assignees
-        const assigneesAPI = `${event.repository.url}/issues/${i}/assignees`;
-        request.post(assigneesAPI, {assignees: [body.user.login]});
+        const assigneesAPI = `${event.repository.url}/issues/${pr.number}/assignees`;
+        request.post(assigneesAPI, {assignees: [pr.user.login]});
     }
 }
 
@@ -149,16 +153,7 @@ async function processOpenOrEditAction() {
 
         if (!hasLabel(iss, IN_REVIEW_LABEL)) {
             // Add the In Review label to the issue as it does not have it
-            // Remove all zube labels
-            const cleanLabels = removeZubeLabels(iss.labels);
-            console.log(`    Current Labels: ${cleanLabels}`);
-            // Add the 'to test' label
-            cleanLabels.push(IN_REVIEW_LABEL);
-            console.log(`    New Labels    : ${cleanLabels}`);
-
-            // Update the labels
-            const labelsAPI = `${detail}/labels`;
-            request.put(labelsAPI, {labels: cleanLabels});
+            resetZubeLabels(iss, IN_REVIEW_LABEL);
         } else {
             console.log('    Issues already has the In Review label');
         }
