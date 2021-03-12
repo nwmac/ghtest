@@ -1,7 +1,7 @@
 name: zube-integration
 on:
   pull_request:
-    types: [ opened, reopened, edited, ready_for_review, synchronize ]
+    types: [ opened, reopened, edited, closed ]
 
 jobs:
   sync:
