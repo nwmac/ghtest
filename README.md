@@ -2,4 +2,4 @@
 
 Testing auto-close workflows
 
-Demo PR
+Demo PR 2
