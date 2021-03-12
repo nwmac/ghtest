@@ -115,7 +115,7 @@ async function processOpenAction() {
     const body = event.pull_request.body;
 
     // Check that an assignee has been set
-    if (body.assigness.length === 0) {
+    if (body.assignees.length === 0) {
         console.log('======');
         console.log('Processing Opened PR #' + event.pull_request.number + ' : ' + event.pull_request.title);
         console.log('======');
