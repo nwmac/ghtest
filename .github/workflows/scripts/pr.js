@@ -45,14 +45,18 @@ async function resetZubeLabels(issue, label) {
 }
 
 async function processClosedAction() {
-    console.log('======');
-    console.log('Processing Closed PR #' + event.pull_request.number + ' : ' + event.pull_request.title);
-    console.log('======');
+    const pr = event.pull_request;
+    const body = pr.body;
 
-    const body = event.pull_request.body;
+    console.log('======');
+    console.log('Processing Closed PR #' + pr.number + ' : ' + pr.title);
+    console.log('======');
 
     // Check that the issue was merged and not just closed
-    // TODO
+    if (!pr.merged) {
+        console.log( '  PR was closed without merging - ignoring');
+        return;
+    }
 
     const issues = getReferencedIssues(body);
     if (issues.length > 0) {
@@ -69,8 +73,8 @@ async function processClosedAction() {
 
     // Go through all of the Open PRs and see if they fix any of the same issues that this PR does
     // If not, then the issue has been completed, so we can process it
-    r.forEach(pr => {
-        const fixed = getReferencedIssues(pr.body);
+    r.forEach(openPR => {
+        const fixed = getReferencedIssues(openPR.body);
         fixed.forEach(issue => issueMap[issue] = false);
     });
 
@@ -92,24 +96,16 @@ async function processClosedAction() {
         const iss = await request.fetch(detail);
         console.log('')
         console.log('Processing Issue #' + i + ' - ' + iss.title);
+        console.log('  Updating labels to move issue to Test');
 
-        // Issue must have the 'In Review' label - i.e. the PR was closed for an isue
-        // with the in review label
-        if (hasLabel(iss, IN_REVIEW_LABEL)) {
-            console.log('  This issue HAS the requested Review label');
-            console.log('  Updating labels to move issue to Test');
+        resetZubeLabels(iss, IN_TEST_LABEL);
 
-            resetZubeLabels(iss, IN_TEST_LABEL);
-
-            // Re-open the issue if it is closed
-            if (iss.state === 'closed') {
-                console.log('Re-opening issue');
-                request.patch(detail, { state: 'open' });
-            } else {
-                console.log('  Expecting issue to be closed, but it is not');
-            }
+        // Re-open the issue if it is closed
+        if (iss.state === 'closed') {
+            console.log('  Re-opening issue');
+            request.patch(detail, { state: 'open' });
         } else {
-            console.log("  This issue does NOT have the required Review label - ignoring");
+            console.log('  Expecting issue to be closed, but it is not');
         }
         console.log('');
     });
