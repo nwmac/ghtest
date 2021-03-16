@@ -40,7 +40,7 @@ async function resetZubeLabels(issue, label) {
     console.log(`    New Labels    : ${cleanLabels}`);
 
     // Update the labels
-    const labelsAPI = `${issue.repository.url}/issues/${issue.number}/labels`;
+    const labelsAPI = `${issue.url}/labels`;
     request.put(labelsAPI, {labels: cleanLabels});
 }
 
