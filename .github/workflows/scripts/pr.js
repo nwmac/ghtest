@@ -98,6 +98,8 @@ async function processClosedAction() {
         console.log('Processing Issue #' + i + ' - ' + iss.title);
         console.log('  Updating labels to move issue to Test');
 
+        console.log(JSON.stringify(iss, null, 2));
+
         resetZubeLabels(iss, IN_TEST_LABEL);
 
         // Re-open the issue if it is closed
