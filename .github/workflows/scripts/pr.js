@@ -4,7 +4,7 @@ const request = require('./request');
 
 const IN_REVIEW_LABEL = '[zube]: Review';
 const IN_TEST_LABEL = '[zube]: To Test';
-const DONE_LABEL = '[zube]: Done Test';
+const DONE_LABEL = '[zube]: Done';
 
 // The event object
 const event = require(process.env.GITHUB_EVENT_PATH);
