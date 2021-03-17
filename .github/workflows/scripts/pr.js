@@ -4,6 +4,7 @@ const request = require('./request');
 
 const IN_REVIEW_LABEL = '[zube]: Review';
 const IN_TEST_LABEL = '[zube]: To Test';
+const DONE_LABEL = '[zube]: Done Test';
 
 // The event object
 const event = require(process.env.GITHUB_EVENT_PATH);
@@ -42,6 +43,25 @@ async function resetZubeLabels(issue, label) {
     // Update the labels
     const labelsAPI = `${issue.url}/labels`;
     request.put(labelsAPI, {labels: cleanLabels});
+}
+
+async function waitForLabel(issue, label) {
+    let tries = 0;
+    while (!hasLabel(issue, label) || tries > 10) {
+        console.log('  Waiting for issue to have the label ' + label);
+
+        // Wait 10 seconds
+        await new Promise(r => setTimeout(r, 10000));
+
+        // Refetch the issue
+        issue = await request.fetch(issue.url);
+
+        tries++;
+    }
+
+    if (tries > 10) {
+        console.log( 'WARNING: Timed out waiting for issue to have the Done label');
+    }
 }
 
 async function processClosedAction() {
@@ -98,7 +118,13 @@ async function processClosedAction() {
         console.log('Processing Issue #' + i + ' - ' + iss.title);
         console.log('  Updating labels to move issue to Test');
 
-        console.log(JSON.stringify(iss, null, 2));
+        // console.log(JSON.stringify(iss, null, 2));
+
+        // The Zube Integration will label the issue with the Done label
+        // Since it runs via a webhook, it should have done that well before our GitHub action
+        // is scheduled and has run, but we will check it has the label and wait if not
+
+        waitForLabel(iss, DONE_LABEL);
 
         resetZubeLabels(iss, IN_TEST_LABEL);
 
@@ -159,7 +185,7 @@ async function processOpenOrEditAction() {
 }
 
 // Debugging
-console.log(JSON.stringify(event, null, 2));
+// console.log(JSON.stringify(event, null, 2));
 
 // Look at the action
 if (event.action === 'opened') {
