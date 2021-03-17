@@ -48,7 +48,7 @@ async function resetZubeLabels(issue, label) {
 async function waitForLabel(issue, label) {
     let tries = 0;
     while (!hasLabel(issue, label) || tries > 10) {
-        console.log('  Waiting for issue to have the label ' + label);
+        console.log(`  Waiting for issue to have the label ${label} (${tries})`);
 
         // Wait 10 seconds
         await new Promise(r => setTimeout(r, 10000));
@@ -60,7 +60,9 @@ async function waitForLabel(issue, label) {
     }
 
     if (tries > 10) {
-        console.log( 'WARNING: Timed out waiting for issue to have the Done label');
+        console.log('WARNING: Timed out waiting for issue to have the Done label');
+    } else {
+        console.log('  Issue has the done label');
     }
 }
 
@@ -124,9 +126,9 @@ async function processClosedAction() {
         // Since it runs via a webhook, it should have done that well before our GitHub action
         // is scheduled and has run, but we will check it has the label and wait if not
 
-        waitForLabel(iss, DONE_LABEL);
+        await waitForLabel(iss, DONE_LABEL);
 
-        resetZubeLabels(iss, IN_TEST_LABEL);
+        await resetZubeLabels(iss, IN_TEST_LABEL);
 
         // Re-open the issue if it is closed
         if (iss.state === 'closed') {
@@ -177,7 +179,7 @@ async function processOpenOrEditAction() {
 
         if (!hasLabel(iss, IN_REVIEW_LABEL)) {
             // Add the In Review label to the issue as it does not have it
-            resetZubeLabels(iss, IN_REVIEW_LABEL);
+            await resetZubeLabels(iss, IN_REVIEW_LABEL);
         } else {
             console.log('    Issues already has the In Review label');
         }
