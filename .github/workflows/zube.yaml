@@ -12,7 +12,11 @@ jobs:
     - name: script2
       run: git version
     - name: clone
-      run: ls -al .github/workflows/scripts
+      run: |
+        mkdir -p .github/workflows/scripts
+        pushd .github/workflows/scripts
+        wget https://raw.githubusercontent.com/nwmac/ghtest/main/.github/workflows/scripts/pr.js
+        popd
     - name: script
       run: node .github/workflows/scripts/pr.js "${{ secrets.GITHUB_TOKEN }}"
 
