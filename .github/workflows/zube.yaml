@@ -9,7 +9,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: script1
-      run: node version
+      run: node --version
     - name: script2
       run: git version
     - name: Use Node.js
