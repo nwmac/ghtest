@@ -7,15 +7,12 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
     - name: script1
       run: node --version
     - name: script2
       run: git version
-    - name: Use Node.js
-      uses: actions/setup-node@v1
-      with:
-        node-version: '14.x'
+    - name: clone
+      run: ls -al .github/workflows/scripts
     - name: script
       run: node .github/workflows/scripts/pr.js "${{ secrets.GITHUB_TOKEN }}"
 
