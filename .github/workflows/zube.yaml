@@ -7,11 +7,17 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js
-      uses: actions/setup-node@v1
-      with:
-        node-version: '14.x'
+    - name: script1
+      run: node --version
+    - name: script2
+      run: git version
+    - name: clone
+      run: |
+        mkdir -p .github/workflows/scripts
+        pushd .github/workflows/scripts
+        wget https://raw.githubusercontent.com/nwmac/ghtest/main/.github/workflows/scripts/pr.js
+        wget https://raw.githubusercontent.com/nwmac/ghtest/main/.github/workflows/scripts/request.js
+        popd
     - name: script
       run: node .github/workflows/scripts/pr.js "${{ secrets.GITHUB_TOKEN }}"
 
