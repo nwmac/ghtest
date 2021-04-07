@@ -24,8 +24,7 @@ function getReferencedIssues(body) {
 }
 
 function hasLabel(issue, label) {
-    const found = issue.labels.find(l =>l.name.toLowerCase() === label.toLowerCase());
-    return !!found;
+    return !!(issue.labels.find(l =>l.name.toLowerCase() === label.toLowerCase()));
 }
 
 function removeZubeLabels(labels) {
@@ -42,7 +41,7 @@ async function resetZubeLabels(issue, label) {
 
     // Update the labels
     const labelsAPI = `${issue.url}/labels`;
-    request.put(labelsAPI, {labels: cleanLabels});
+    return request.put(labelsAPI, {labels: cleanLabels});
 }
 
 async function waitForLabel(issue, label) {
@@ -133,7 +132,7 @@ async function processClosedAction() {
         // Re-open the issue if it is closed
         if (iss.state === 'closed') {
             console.log('  Re-opening issue');
-            request.patch(detail, { state: 'open' });
+            await request.patch(detail, { state: 'open' });
         } else {
             console.log('  Expecting issue to be closed, but it is not');
         }
@@ -154,7 +153,7 @@ async function processOpenAction() {
 
         // Update the assignees
         const assigneesAPI = `${event.repository.url}/issues/${pr.number}/assignees`;
-        request.post(assigneesAPI, {assignees: [pr.user.login]});
+        await request.post(assigneesAPI, {assignees: [pr.user.login]});
     }
 }
 
@@ -181,7 +180,7 @@ async function processOpenOrEditAction() {
             // Add the In Review label to the issue as it does not have it
             await resetZubeLabels(iss, IN_REVIEW_LABEL);
         } else {
-            console.log('    Issues already has the In Review label');
+            console.log('    Issue already has the In Review label');
         }
     });
 }
@@ -193,7 +192,9 @@ async function processOpenOrEditAction() {
 if (event.action === 'opened') {
     processOpenAction();
     processOpenOrEditAction();
-} else if (event.action === 'edited') {
+} else if (event.action === 'edited' || event.action === 'reopened') {
+    // TODO: Remove - for testing of assignee setting
+    processOpenAction();
     processOpenOrEditAction();
 } else if (event.action === 'closed') {
     processClosedAction();

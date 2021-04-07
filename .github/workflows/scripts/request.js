@@ -59,6 +59,8 @@ function write(url, data, method) {
         const req = https.request(url, opts, (response) => {
             let chunks_of_data = [];
 
+            console.log(response);
+
             response.on('data', (fragments) => {
                 chunks_of_data.push(fragments);
             });
@@ -69,6 +71,8 @@ function write(url, data, method) {
             });
 
             response.on('error', (error) => {
+                console.log('Error making ' + method + ' request to: ' + url);
+                console.log(error);
                 reject(error);
             });
         });
