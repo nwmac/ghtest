@@ -68,7 +68,7 @@ function write(url, data, method) {
 
             response.on('end', () => {
                 let response_body = Buffer.concat(chunks_of_data);
-                console.log(response_body);
+                console.log(response_body.toString());
                 resolve(JSON.parse(response_body.toString()));
             });
 
