@@ -59,16 +59,22 @@ function write(url, data, method) {
         const req = https.request(url, opts, (response) => {
             let chunks_of_data = [];
 
+            console.log('Made ' + method + ' request to: ' + url);
+            console.log(response.statusCode);
+
             response.on('data', (fragments) => {
                 chunks_of_data.push(fragments);
             });
 
             response.on('end', () => {
                 let response_body = Buffer.concat(chunks_of_data);
+                console.log(response_body.toString());
                 resolve(JSON.parse(response_body.toString()));
             });
 
             response.on('error', (error) => {
+                console.log('Error making ' + method + ' request to: ' + url);
+                console.log(error);
                 reject(error);
             });
         });
