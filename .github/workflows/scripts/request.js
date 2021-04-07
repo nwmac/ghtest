@@ -59,7 +59,8 @@ function write(url, data, method) {
         const req = https.request(url, opts, (response) => {
             let chunks_of_data = [];
 
-            console.log(response);
+            console.log('Made ' + method + ' request to: ' + url);
+            console.log(response.statusCode);
 
             response.on('data', (fragments) => {
                 chunks_of_data.push(fragments);
@@ -67,6 +68,7 @@ function write(url, data, method) {
 
             response.on('end', () => {
                 let response_body = Buffer.concat(chunks_of_data);
+                console.log(response_body);
                 resolve(JSON.parse(response_body.toString()));
             });
 
