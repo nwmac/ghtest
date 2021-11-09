@@ -5,6 +5,7 @@ const request = require('./request');
 const IN_REVIEW_LABEL = '[zube]: Review';
 const IN_TEST_LABEL = '[zube]: To Test';
 const DONE_LABEL = '[zube]: Done';
+const BACKEND_BLOCKED_LABEL = '[zube]: Backend Blocked';
 
 // The event object
 const event = require(process.env.GITHUB_EVENT_PATH);
@@ -24,8 +25,7 @@ function getReferencedIssues(body) {
 }
 
 function hasLabel(issue, label) {
-    const found = issue.labels.find(l =>l.name.toLowerCase() === label.toLowerCase());
-    return !!found;
+    return !!(issue.labels.find(l =>l.name.toLowerCase() === label.toLowerCase()));
 }
 
 function removeZubeLabels(labels) {
@@ -42,12 +42,12 @@ async function resetZubeLabels(issue, label) {
 
     // Update the labels
     const labelsAPI = `${issue.url}/labels`;
-    request.put(labelsAPI, {labels: cleanLabels});
+    return request.put(labelsAPI, {labels: cleanLabels});
 }
 
 async function waitForLabel(issue, label) {
     let tries = 0;
-    while (!hasLabel(issue, label) || tries > 10) {
+    while (!hasLabel(issue, label) && tries < 10) {
         console.log(`  Waiting for issue to have the label ${label} (${tries})`);
 
         // Wait 10 seconds
@@ -133,7 +133,7 @@ async function processClosedAction() {
         // Re-open the issue if it is closed
         if (iss.state === 'closed') {
             console.log('  Re-opening issue');
-            request.patch(detail, { state: 'open' });
+            await request.patch(detail, { state: 'open' });
         } else {
             console.log('  Expecting issue to be closed, but it is not');
         }
@@ -154,7 +154,7 @@ async function processOpenAction() {
 
         // Update the assignees
         const assigneesAPI = `${event.repository.url}/issues/${pr.number}/assignees`;
-        request.post(assigneesAPI, {assignees: [pr.user.login]});
+        await request.post(assigneesAPI, {assignees: [pr.user.login]});
     }
 }
 
@@ -166,31 +166,58 @@ async function processOpenOrEditAction() {
     const body = event.pull_request.body;
     const issues = getReferencedIssues(body);
     if (issues.length > 0) {
-        console.log('  This PR fixes issues: ' + issues.join(', '));
+        console.log('+ This PR fixes issues: #' + issues.join(', '));
     } else {
-        console.log("  This PR does not fix any issues");
+        console.log("+ This PR does not fix any issues");
     }
 
-    issues.forEach(async(i) => {
-        const detail = `${event.repository.url}/issues/${i}`;
-        const iss = await request.fetch(detail);
-        console.log('')
-        console.log('Processing Issue #' + i + ' - ' + iss.title);
+    const milestones = {};
 
+    for (i of issues) {
+      const detail = `${event.repository.url}/issues/${i}`;
+      const iss = await request.fetch(detail);
+      console.log('')
+      console.log('Processing Issue #' + i + ' - ' + iss.title);
+
+      if (hasLabel(iss, BACKEND_BLOCKED_LABEL)) {
+        console.log('    Issue will not be moved to In Review (Backend Blocked)');
+      } else {
         if (!hasLabel(iss, IN_REVIEW_LABEL)) {
             // Add the In Review label to the issue as it does not have it
             await resetZubeLabels(iss, IN_REVIEW_LABEL);
         } else {
-            console.log('    Issues already has the In Review label');
+            console.log('    Issue already has the In Review label');
         }
-    });
+      }
+
+      if (iss.milestone) {
+        milestones[iss.milestone.title] = iss.milestone.number;
+      }
+    }
+
+    const keys = Object.keys(milestones);
+    if (keys.length === 0) {
+      console.log('No milestones on issue(s) for this PR');
+    } else if (keys.length > 1) {
+      console.log('More than one milestone on issues for this PR');
+    } else {
+      // There is exactly 1 milestone, so use that for the PR
+      const milestoneNumber = milestones[keys[0]];
+
+      if (event.pull_request.milestone?.number !== milestoneNumber) {
+        console.log('Updating PR with milestone: ' + keys[0]);
+        await request.patch(event.pull_request.issue_url, {milestone: milestoneNumber});
+      } else {
+        console.log('PR is already assigned to milestone ' + keys[0]);
+      }
+    }
 }
 
 // Debugging
 // console.log(JSON.stringify(event, null, 2));
 
 // Look at the action
-if (event.action === 'opened') {
+if (event.action === 'opened' || event.action === 'reopened') {
     processOpenAction();
     processOpenOrEditAction();
 } else if (event.action === 'edited') {
