@@ -1,7 +1,3 @@
 # ghtest
 
-Testing auto-close workflows
-
-Demo
-
-Test 5
+Fix 1
